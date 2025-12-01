@@ -1,0 +1,62 @@
+# Dependencies
+node_modules
+**/node_modules
+.pnpm-store
+
+# Build outputs
+dist
+.next
+.turbo
+out
+build
+
+# Development files
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Test files
+coverage
+.nyc_output
+**/*.test.ts
+**/*.spec.ts
+**/__tests__
+
+# Documentation
+docs
+*.md
+!README.md
+
+# Docker files (prevent recursive copying)
+docker-compose*.yml
+Dockerfile*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Misc
+*.swp
+*.swo
+*~
+.cache
+
+# Mobile app (not needed for Docker)
+apps/mobile
+
+# Temporary files
+tmp
+temp

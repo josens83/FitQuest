@@ -1,0 +1,94 @@
+name: Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      action:
+        description: 'Database action'
+        required: true
+        type: choice
+        options:
+          - migrate
+          - seed
+          - reset
+
+jobs:
+  database-action:
+    name: Database ${{ inputs.action }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Run database action
+        run: |
+          case "${{ inputs.action }}" in
+            migrate)
+              pnpm db:migrate:deploy
+              ;;
+            seed)
+              pnpm db:seed
+              ;;
+            reset)
+              echo "Reset not allowed in production"
+              if [ "${{ inputs.environment }}" != "production" ]; then
+                pnpm db:reset
+              else
+                exit 1
+              fi
+              ;;
+          esac
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Verify database
+        run: |
+          pnpm prisma db pull --print || true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Notify on completion
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅' || '❌' }} Database ${{ inputs.action }} on ${{ inputs.environment }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ job.status == 'success' && '✅' || '❌' }} Database Action Completed*\nAction: `${{ inputs.action }}`\nEnvironment: `${{ inputs.environment }}`\nStatus: `${{ job.status }}`"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
