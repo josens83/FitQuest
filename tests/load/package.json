@@ -1,0 +1,19 @@
+{
+  "name": "@fitquest/load-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "K6 load testing scripts for FitQuest API",
+  "scripts": {
+    "test": "k6 run scripts/smoke-test.js",
+    "test:smoke": "k6 run scripts/smoke-test.js",
+    "test:load": "k6 run scripts/load-test.js",
+    "test:stress": "k6 run scripts/stress-test.js",
+    "test:spike": "k6 run scripts/spike-test.js",
+    "test:soak": "k6 run scripts/soak-test.js",
+    "test:api": "k6 run scripts/api-endpoints.js",
+    "test:workout": "k6 run scripts/workout-flow.js"
+  },
+  "devDependencies": {
+    "@types/k6": "^0.49.0"
+  }
+}
