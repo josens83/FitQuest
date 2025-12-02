@@ -20,3 +20,10 @@ export {
   createMemoryHealthCheck,
   createDiskHealthCheck,
 } from './health.service';
+export {
+  BusinessMetricsService,
+  WorkoutCompletedData,
+  AchievementUnlockedData,
+  SubscriptionEventData,
+  SessionEventData,
+} from './business-metrics.service';
