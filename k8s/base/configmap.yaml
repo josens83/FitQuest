@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fitquest-config
+  namespace: fitquest
+  labels:
+    app.kubernetes.io/name: fitquest
+data:
+  NODE_ENV: "production"
+  API_PORT: "4000"
+  WEB_PORT: "3000"
+
+  # Database
+  DATABASE_HOST: "postgres-service"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "fitquest"
+
+  # Redis
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+
+  # CORS
+  CORS_ORIGINS: "https://fitquest.com,https://www.fitquest.com"
+
+  # JWT
+  JWT_EXPIRES_IN: "1h"
+  JWT_REFRESH_EXPIRES_IN: "7d"
+
+  # Rate Limiting
+  RATE_LIMIT_TTL: "60"
+  RATE_LIMIT_MAX: "100"
+
+  # Logging
+  LOG_LEVEL: "info"
+
+  # Feature Flags
+  ENABLE_AI_COACH: "true"
+  ENABLE_PREMIUM_FEATURES: "true"

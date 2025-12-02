@@ -1,0 +1,53 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fitquest-api-role
+  namespace: fitquest
+rules:
+  # Allow reading configmaps and secrets
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  # Allow reading pods for health checks
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fitquest-api-rolebinding
+  namespace: fitquest
+subjects:
+  - kind: ServiceAccount
+    name: fitquest-api
+    namespace: fitquest
+roleRef:
+  kind: Role
+  name: fitquest-api-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fitquest-web-role
+  namespace: fitquest
+rules:
+  # Allow reading configmaps
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fitquest-web-rolebinding
+  namespace: fitquest
+subjects:
+  - kind: ServiceAccount
+    name: fitquest-web
+    namespace: fitquest
+roleRef:
+  kind: Role
+  name: fitquest-web-role
+  apiGroup: rbac.authorization.k8s.io

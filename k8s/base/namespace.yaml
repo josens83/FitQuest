@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fitquest
+  labels:
+    app.kubernetes.io/name: fitquest
+    app.kubernetes.io/managed-by: kubectl
