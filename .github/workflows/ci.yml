@@ -197,3 +197,87 @@ jobs:
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  performance-smoke:
+    name: Performance Smoke Test
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: fitquest_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/fitquest_test
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: test-secret-key
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install k6
+        run: |
+          curl -sSL https://github.com/grafana/k6/releases/download/v0.47.0/k6-v0.47.0-linux-amd64.tar.gz | tar xz
+          sudo mv k6-v0.47.0-linux-amd64/k6 /usr/local/bin/
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Run database migrations
+        run: pnpm db:migrate:deploy
+
+      - name: Start API server
+        run: |
+          cd apps/api && pnpm build && pnpm start:prod &
+          sleep 15
+
+      - name: Run performance smoke test
+        run: |
+          k6 run \
+            --env BASE_URL=http://localhost:4000 \
+            --duration 30s \
+            --vus 5 \
+            tests/load/smoke-test.js
+        continue-on-error: true
+
+      - name: Performance Summary
+        run: |
+          echo "## Performance Smoke Test" >> $GITHUB_STEP_SUMMARY
+          echo "Quick performance validation completed" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,115 @@
+{
+  "name": "FitQuest - Gamified Home Fitness",
+  "short_name": "FitQuest",
+  "description": "Your personal gamified home fitness companion. Track workouts, earn achievements, and level up your fitness journey.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ko",
+  "dir": "ltr",
+  "categories": ["fitness", "health", "lifestyle", "sports"],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard view"
+    },
+    {
+      "src": "/screenshots/workout.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Workout tracking"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Workout",
+      "short_name": "Workout",
+      "description": "Start a new workout session",
+      "url": "/workouts/start",
+      "icons": [{ "src": "/icons/workout-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Progress",
+      "short_name": "Progress",
+      "description": "View your fitness progress",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/progress-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Challenges",
+      "short_name": "Challenges",
+      "description": "Join fitness challenges",
+      "url": "/challenges",
+      "icons": [{ "src": "/icons/challenge-icon.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=app.fitquest",
+      "id": "app.fitquest"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/fitquest/id123456789"
+    }
+  ],
+  "prefer_related_applications": false
+}

@@ -10,6 +10,15 @@ export const metadata: Metadata = {
   description: '운동을 RPG처럼 즐기세요. 레벨업하고, 업적을 달성하고, 건강해지세요!',
   keywords: ['피트니스', '홈트레이닝', '운동', '게이미피케이션', '다이어트', '건강'],
   authors: [{ name: 'FitQuest Team' }],
+  applicationName: 'FitQuest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'FitQuest',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     type: 'website',
     locale: 'ko_KR',
@@ -26,16 +35,21 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    apple: [
+      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#10B981',
+  themeColor: '#6366f1',
+  colorScheme: 'dark',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

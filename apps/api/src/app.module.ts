@@ -13,6 +13,7 @@ import { NutritionModule } from './modules/nutrition/nutrition.module';
 import { SocialModule } from './modules/social/social.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { HealthModule } from './modules/health/health.module';
+import { RealtimeModule } from './modules/realtime/realtime.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { HealthModule } from './modules/health/health.module';
     SocialModule,
     SubscriptionModule,
     HealthModule,
+    RealtimeModule,
   ],
 })
 export class AppModule {}
