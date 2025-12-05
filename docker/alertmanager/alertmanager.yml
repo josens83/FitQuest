@@ -1,0 +1,194 @@
+global:
+  # SMTP configuration for email alerts
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@fitquest.app'
+  smtp_auth_username: '${SMTP_USERNAME}'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  smtp_require_tls: true
+
+  # Slack webhook URL
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+
+  # PagerDuty integration key
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+  # Resolve timeout
+  resolve_timeout: 5m
+
+# Route tree
+route:
+  # Default receiver
+  receiver: 'default-receiver'
+
+  # Group alerts by these labels
+  group_by: ['alertname', 'severity', 'service']
+
+  # Wait time before sending first notification
+  group_wait: 30s
+
+  # Wait time before sending updated notifications
+  group_interval: 5m
+
+  # Repeat interval for ongoing alerts
+  repeat_interval: 4h
+
+  # Child routes for specific routing
+  routes:
+    # Critical alerts -> PagerDuty + Slack
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      repeat_interval: 1h
+
+    # Warning alerts -> Slack only
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 1m
+      repeat_interval: 4h
+
+    # Security alerts -> Security team
+    - match_re:
+        alertname: '^(BruteForceAttempt|SuspiciousRateLimitHits|HighFailedLoginRate)$'
+      receiver: 'security-alerts'
+      group_wait: 10s
+      repeat_interval: 30m
+
+    # Business metrics -> Product team (email only)
+    - match_re:
+        alertname: '^(NoWorkoutSessions|HighPaymentFailureRate|SubscriptionChurnSpike|LowUserEngagement)$'
+      receiver: 'business-alerts'
+      group_wait: 5m
+      repeat_interval: 24h
+
+    # Database alerts -> DBA team
+    - match_re:
+        alertname: '^Database.*$'
+      receiver: 'database-alerts'
+      group_wait: 30s
+      repeat_interval: 2h
+
+# Inhibition rules - suppress lower severity alerts when higher ones fire
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']
+
+  - source_match:
+      alertname: 'DatabaseDown'
+    target_match_re:
+      alertname: '^Database.*$'
+    equal: ['instance']
+
+  - source_match:
+      alertname: 'RedisDown'
+    target_match_re:
+      alertname: '^Redis.*$'
+    equal: ['instance']
+
+# Receivers
+receivers:
+  # Default receiver - Slack notification
+  - name: 'default-receiver'
+    slack_configs:
+      - channel: '#fitquest-alerts'
+        send_resolved: true
+        title: '{{ .Status | toUpper }}: {{ .CommonLabels.alertname }}'
+        text: >-
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          {{ end }}
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+  # Critical alerts - PagerDuty + Slack
+  - name: 'critical-alerts'
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY}'
+        severity: critical
+        description: '{{ .CommonAnnotations.summary }}'
+        details:
+          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+          resolved: '{{ template "pagerduty.default.instances" .Alerts.Resolved }}'
+    slack_configs:
+      - channel: '#fitquest-critical'
+        send_resolved: true
+        title: 'CRITICAL: {{ .CommonLabels.alertname }}'
+        text: >-
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Runbook:* {{ .Annotations.runbook_url }}
+          {{ end }}
+        color: 'danger'
+
+  # Warning alerts - Slack only
+  - name: 'warning-alerts'
+    slack_configs:
+      - channel: '#fitquest-alerts'
+        send_resolved: true
+        title: 'WARNING: {{ .CommonLabels.alertname }}'
+        text: >-
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+        color: 'warning'
+
+  # Security alerts - Security team Slack + Email
+  - name: 'security-alerts'
+    slack_configs:
+      - channel: '#fitquest-security'
+        send_resolved: true
+        title: 'SECURITY: {{ .CommonLabels.alertname }}'
+        text: >-
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+        color: 'danger'
+    email_configs:
+      - to: 'security@fitquest.app'
+        send_resolved: true
+        html: |
+          <h2>Security Alert: {{ .CommonLabels.alertname }}</h2>
+          {{ range .Alerts }}
+          <p><strong>Summary:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+          {{ end }}
+
+  # Business alerts - Product team email
+  - name: 'business-alerts'
+    email_configs:
+      - to: 'product@fitquest.app'
+        send_resolved: true
+        html: |
+          <h2>Business Metrics Alert: {{ .CommonLabels.alertname }}</h2>
+          {{ range .Alerts }}
+          <p><strong>Summary:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+          {{ end }}
+
+  # Database alerts - DBA team
+  - name: 'database-alerts'
+    slack_configs:
+      - channel: '#fitquest-database'
+        send_resolved: true
+        title: 'DATABASE: {{ .CommonLabels.alertname }}'
+        text: >-
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+        color: '{{ if eq .Labels.severity "critical" }}danger{{ else }}warning{{ end }}'
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_DBA_KEY}'
+        severity: '{{ .Labels.severity }}'
+
+# Templates
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
